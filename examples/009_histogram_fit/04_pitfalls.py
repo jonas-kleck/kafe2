@@ -23,9 +23,10 @@ processed. The XYFit does not have any built-in functionality to transform raw d
 histogrammed data. This means if we want to use histogrammed data, this has to be done manually.
 In the following, 30 datapoints, sampled from a normal distribution, are used.
 """
-import numpy as np
 import matplotlib.pyplot as plt
-from kafe2 import XYContainer, Fit, HistContainer, Plot
+import numpy as np
+
+from kafe2 import Fit, HistContainer, Plot, XYContainer
 
 
 def normal_distribution(x, mu=0, sigma=1):
@@ -86,13 +87,13 @@ Plot1 = Plot(XYFit_1)
 Plot1.plot()
 plt.show()
 """
-When performing the fit, errors like "The cost function was evaluated as infinite" appear in the output. 
+When performing the fit, errors like "The cost function was evaluated as infinite" appear in the output.
 Furthermore, when looking at the plot of our fit result, it is clear that this fit didn't return the result we expected.
 The starting values for the fit are returned as best fit value, and the uncertainties are reported as NaN.
 What happened? The problem arises because Poisson uncertainties were assumed for the bin counts.
 If a bin is empty, the uncertainty is treated as zero by the fit. Thus the model function is forced to pass this datapoint
 exactly or the cost function will be infinite.
-This occures because the XYFit uses a χ²-cost function by default, which is only valid 
+This occures because the XYFit uses a χ²-cost function by default, which is only valid
 for Gaussian uncertainties, but not in the case of Poisson uncertainties. To fix this, the
 cost function of the fit is changed to a Poisson negative log-likelhoood (NLL).
 """
@@ -119,7 +120,7 @@ plt.show()
 
 """
 Now it wasn't even necessary to explicitly specify the y-errors. By using a Poisson NLL,
-the y-errors are no longer calculated from the measured bin counts, but instead from the model expectation. 
+the y-errors are no longer calculated from the measured bin counts, but instead from the model expectation.
 This handles empty bins correctly and also prevents getting biased uncertainties.
 
 Another subtlety is the definition of the y_data: So far, simply the midpoint of each bin was used. This is only
@@ -130,7 +131,7 @@ The most accurate albeit computationally expensive method would be to integrate 
 The implementation of Simpson's rule in our procedure using a XYFit will not be done here,
 since the influence is rather small in this case. Instead, it is shown how it is much easier to just use the HistFit
 class of kafe2. The binning is automatically done by the HistContainer, the Poisson NLL is the default cost function
-and the Simpson rule is already implemented. 
+and the Simpson rule is already implemented.
 """
 # We will use our initial data and binning
 hist_data = HistContainer(bin_edges=bin_edges, fill_data=data)
